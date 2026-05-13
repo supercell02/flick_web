@@ -1,26 +1,41 @@
 @import "tailwindcss";
 
+@theme inline {
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+
+  --font-sans: var(--font-mono);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-playfair);
+
+  --radius: 0px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --foreground: #000000;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), "Playfair Display", serif;
+}
+
+/* Remove all border-radius globally */
+*, *::before, *::after {
+  border-radius: 0 !important;
+}
+
+/* Pill badges are the only exception — override back */
+.rounded-full {
+  border-radius: 9999px !important;
 }
