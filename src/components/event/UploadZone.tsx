@@ -3,15 +3,22 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, CheckCircle, AlertCircle, FolderOpen } from "lucide-react";
 import { track } from "@/lib/posthog";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 
+interface Subfolder {
+  _id: Id<"subfolders">;
+  name: string;
+}
+
 interface UploadZoneProps {
   eventId: Id<"events">;
   guestName: string;
+  subfolders?: Subfolder[];
+  preselectedSubfolderId?: Id<"subfolders">;
 }
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -54,10 +61,11 @@ function uploadFileWithProgress(
   });
 }
 
-export function UploadZone({ eventId, guestName }: UploadZoneProps) {
+export function UploadZone({ eventId, guestName, subfolders = [], preselectedSubfolderId }: UploadZoneProps) {
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
+  const [selectedSubfolderId, setSelectedSubfolderId] = useState<Id<"subfolders"> | "">(preselectedSubfolderId ?? "");
 
   const generateUploadUrl = useMutation(api.uploads.generateUploadUrl);
   const addUpload = useMutation(api.uploads.addUpload);
@@ -98,6 +106,7 @@ export function UploadZone({ eventId, guestName }: UploadZoneProps) {
             uploadedBy: guestName,
             size: file.size,
             deviceInfo,
+            subfolderId: selectedSubfolderId || undefined,
           });
 
           filesUploaded++;
@@ -115,7 +124,7 @@ export function UploadZone({ eventId, guestName }: UploadZoneProps) {
         setProgress(0);
       }
     },
-    [generateUploadUrl, addUpload, trackEvent, eventId, guestName]
+    [generateUploadUrl, addUpload, trackEvent, eventId, guestName, selectedSubfolderId]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -127,12 +136,32 @@ export function UploadZone({ eventId, guestName }: UploadZoneProps) {
 
   return (
     <div className="space-y-3">
+      {/* Optional album selector */}
+      {subfolders.length > 0 && (
+        <div className="flex items-center gap-2">
+          <FolderOpen size={14} strokeWidth={1.5} className="text-[#888888] flex-shrink-0" />
+          <select
+            value={selectedSubfolderId}
+            onChange={(e) => setSelectedSubfolderId(e.target.value as Id<"subfolders"> | "")}
+            className="flex-1 border border-black px-3 py-2 font-mono text-xs bg-white focus:outline-none focus:ring-1 focus:ring-black rounded-lg appearance-none"
+            disabled={status === "uploading"}
+          >
+            <option value="">No album (general)</option>
+            {subfolders.map((sf) => (
+              <option key={sf._id} value={sf._id}>
+                {sf.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Mobile tap button */}
       <div {...getRootProps()} className="md:hidden">
         <input {...getInputProps()} />
         <button
           disabled={status === "uploading"}
-          className="w-full bg-black text-white h-16 font-mono text-sm uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 min-h-11 hover:bg-neutral-800 transition-colors"
+          className="w-full bg-black text-white h-16 font-mono text-sm uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 min-h-11 hover:bg-neutral-800 transition-colors rounded-xl"
         >
           <Upload size={18} strokeWidth={1.5} />
           Tap to Add Photos &amp; Videos
@@ -142,7 +171,7 @@ export function UploadZone({ eventId, guestName }: UploadZoneProps) {
       {/* Desktop drop zone */}
       <div
         {...getRootProps()}
-        className={`hidden md:flex flex-col items-center justify-center border-2 border-dashed border-black p-12 cursor-pointer transition-colors ${
+        className={`hidden md:flex flex-col items-center justify-center border-2 border-dashed border-black p-12 cursor-pointer transition-colors rounded-xl ${
           isDragActive ? "bg-[#F5F5F5]" : "hover:bg-[#F5F5F5]"
         } ${status === "uploading" ? "opacity-50 pointer-events-none" : ""}`}
       >
@@ -184,7 +213,7 @@ export function UploadZone({ eventId, guestName }: UploadZoneProps) {
             initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex items-center gap-2 border border-black p-3 bg-white"
+            className="flex items-center gap-2 border border-black p-3 bg-white rounded-lg"
           >
             <CheckCircle size={16} strokeWidth={1.5} />
             <p className="font-mono text-xs uppercase tracking-widest">
@@ -198,7 +227,7 @@ export function UploadZone({ eventId, guestName }: UploadZoneProps) {
             initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex items-center gap-2 border border-black p-3 bg-white"
+            className="flex items-center gap-2 border border-black p-3 bg-white rounded-lg"
           >
             <AlertCircle size={16} strokeWidth={1.5} />
             <p className="font-mono text-xs uppercase tracking-widest text-red-600">

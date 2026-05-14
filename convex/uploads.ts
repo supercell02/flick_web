@@ -15,6 +15,7 @@ export const addUpload = mutation({
     uploadedBy: v.string(),
     size: v.number(),
     deviceInfo: v.string(),
+    subfolderId: v.optional(v.id("subfolders")),
   },
   handler: async (ctx, args) => {
     const uploadedBy = args.uploadedBy.trim().slice(0, 50);
@@ -23,6 +24,14 @@ export const addUpload = mutation({
     const event = await ctx.db.get(args.eventId);
     if (!event) throw new ConvexError("Event not found");
     if (event.uploadCount >= 500) throw new ConvexError("Upload limit reached");
+
+    // Validate subfolder belongs to this event if provided
+    if (args.subfolderId) {
+      const subfolder = await ctx.db.get(args.subfolderId);
+      if (!subfolder || subfolder.eventId !== args.eventId) {
+        throw new ConvexError("Invalid album");
+      }
+    }
 
     const fileUrl = await ctx.storage.getUrl(args.storageId);
     if (!fileUrl) throw new ConvexError("File not found in storage");
@@ -36,6 +45,7 @@ export const addUpload = mutation({
       size: args.size,
       deviceInfo: args.deviceInfo.slice(0, 200),
       isVisible: true,
+      subfolderId: args.subfolderId,
     });
 
     await ctx.db.patch(args.eventId, {
@@ -60,17 +70,39 @@ export const getAllUploadsByEvent = query({
   args: { eventId: v.id("events") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new ConvexError("Unauthorized");
+    if (!identity) return null;
 
     const event = await ctx.db.get(args.eventId);
-    if (!event) throw new ConvexError("Event not found");
-    if (event.hostId !== identity.subject) throw new ConvexError("Unauthorized");
+    if (!event) return null;
+    if (event.hostId !== identity.subject) return null;
 
     return await ctx.db
       .query("uploads")
       .withIndex("by_event_time", (q) => q.eq("eventId", args.eventId))
       .order("desc")
       .collect();
+  },
+});
+
+export const deleteOwnUpload = mutation({
+  args: {
+    uploadId: v.id("uploads"),
+    uploadedBy: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const upload = await ctx.db.get(args.uploadId);
+    if (!upload) throw new ConvexError("Upload not found");
+
+    if (upload.uploadedBy !== args.uploadedBy.trim()) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    await ctx.db.delete(args.uploadId);
+
+    const event = await ctx.db.get(upload.eventId);
+    if (event && event.uploadCount > 0) {
+      await ctx.db.patch(upload.eventId, { uploadCount: event.uploadCount - 1 });
+    }
   },
 });
 
@@ -88,6 +120,10 @@ export const deleteUpload = mutation({
     if (event.hostId !== identity.subject) throw new ConvexError("Unauthorized");
 
     await ctx.db.delete(args.uploadId);
+
+    if (event.uploadCount > 0) {
+      await ctx.db.patch(upload.eventId, { uploadCount: event.uploadCount - 1 });
+    }
   },
 });
 

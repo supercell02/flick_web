@@ -29,7 +29,7 @@ export function EventCard({ event, index = 0 }: EventCardProps) {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: "easeOut", delay: index * 0.05 }}
     >
-      <Link href={`/dashboard/${event._id}`} className="block border border-black group">
+      <Link href={`/dashboard/${event._id}`} className="block border border-black group rounded-xl overflow-hidden">
         {/* Cover image */}
         <div className="aspect-video w-full overflow-hidden border-b border-black bg-[#F5F5F5] relative">
           {event.coverImage ? (
@@ -37,7 +37,7 @@ export function EventCard({ event, index = 0 }: EventCardProps) {
             <img
               src={event.coverImage}
               alt={event.title}
-              className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+              className="w-full h-full object-cover transition-all duration-500"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -45,7 +45,7 @@ export function EventCard({ event, index = 0 }: EventCardProps) {
             </div>
           )}
           {!revealed && (
-            <div className="absolute top-2 right-2 bg-black text-white px-2 py-1 flex items-center gap-1">
+            <div className="absolute top-2 right-2 bg-black text-white px-2 py-1 flex items-center gap-1 rounded-md">
               <Clock size={10} strokeWidth={1.5} />
               <span className="font-mono text-[10px] uppercase tracking-widest">Unrevealed</span>
             </div>

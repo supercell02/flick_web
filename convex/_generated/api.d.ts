@@ -10,6 +10,7 @@
 
 import type * as analytics from "../analytics.js";
 import type * as events from "../events.js";
+import type * as subfolders from "../subfolders.js";
 import type * as uploads from "../uploads.js";
 
 import type {
@@ -21,6 +22,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   events: typeof events;
+  subfolders: typeof subfolders;
   uploads: typeof uploads;
 }>;
 

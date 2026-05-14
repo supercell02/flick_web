@@ -8,7 +8,7 @@
   --font-mono: var(--font-mono);
   --font-serif: var(--font-playfair);
 
-  --radius: 0px;
+  --radius: 0.5rem;
 }
 
 * {
@@ -28,14 +28,4 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-playfair), "Playfair Display", serif;
-}
-
-/* Remove all border-radius globally */
-*, *::before, *::after {
-  border-radius: 0 !important;
-}
-
-/* Pill badges are the only exception — override back */
-.rounded-full {
-  border-radius: 9999px !important;
 }

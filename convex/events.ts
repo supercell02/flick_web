@@ -106,11 +106,11 @@ export const getEventByIdForHost = query({
   args: { eventId: v.id("events") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new ConvexError("Unauthorized");
+    if (!identity) return null;
 
     const event = await ctx.db.get(args.eventId);
-    if (!event) throw new ConvexError("Event not found");
-    if (event.hostId !== identity.subject) throw new ConvexError("Unauthorized");
+    if (!event) return null;
+    if (event.hostId !== identity.subject) return null;
 
     return event;
   },
@@ -143,6 +143,14 @@ export const deleteEvent = mutation({
       .collect();
     for (const upload of uploads) {
       await ctx.db.delete(upload._id);
+    }
+
+    const subfolders = await ctx.db
+      .query("subfolders")
+      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
+      .collect();
+    for (const subfolder of subfolders) {
+      await ctx.db.delete(subfolder._id);
     }
 
     const analytics = await ctx.db

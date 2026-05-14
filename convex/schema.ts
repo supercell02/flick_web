@@ -21,6 +21,12 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_host", ["hostId"]),
 
+  subfolders: defineTable({
+    eventId: v.id("events"),
+    name: v.string(),
+    createdAt: v.number(),
+  }).index("by_event", ["eventId"]),
+
   uploads: defineTable({
     eventId: v.id("events"),
     fileUrl: v.string(),
@@ -30,6 +36,7 @@ export default defineSchema({
     size: v.number(),
     deviceInfo: v.string(),
     isVisible: v.boolean(),
+    subfolderId: v.optional(v.id("subfolders")),
   })
     .index("by_event", ["eventId"])
     .index("by_event_time", ["eventId", "uploadedAt"]),

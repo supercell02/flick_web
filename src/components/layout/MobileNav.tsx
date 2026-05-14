@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ImageIcon, Upload, QrCode } from "lucide-react";
 
 interface MobileNavProps {
@@ -10,30 +10,44 @@ interface MobileNavProps {
 
 export function MobileNav({ slug }: MobileNavProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const showQr = searchParams?.get("show") === "qr";
 
   const links = [
-    { href: `/e/${slug}`, label: "Gallery", icon: ImageIcon },
-    { href: `/e/${slug}/upload`, label: "Upload", icon: Upload },
-    { href: `/e/${slug}?show=qr`, label: "QR Code", icon: QrCode },
+    {
+      href: `/e/${slug}#gallery`,
+      label: "Gallery",
+      icon: ImageIcon,
+      active: pathname === `/e/${slug}` && !showQr,
+    },
+    {
+      href: `/e/${slug}/upload`,
+      label: "Upload",
+      icon: Upload,
+      active: pathname === `/e/${slug}/upload`,
+    },
+    {
+      href: `/e/${slug}?show=qr`,
+      label: "Share",
+      icon: QrCode,
+      active: pathname === `/e/${slug}` && showQr,
+    },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-black flex md:hidden z-50">
-      {links.map(({ href, label, icon: Icon }) => {
-        const active = pathname === href.split("?")[0];
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={`flex-1 flex flex-col items-center justify-center py-3 min-h-14 text-xs font-mono uppercase tracking-widest gap-1 transition-colors ${
-              active ? "bg-black text-white" : "text-black hover:bg-[#F5F5F5]"
-            }`}
-          >
-            <Icon size={18} strokeWidth={1.5} />
-            {label}
-          </Link>
-        );
-      })}
+      {links.map(({ href, label, icon: Icon, active }) => (
+        <Link
+          key={label}
+          href={href}
+          className={`flex-1 flex flex-col items-center justify-center py-3 min-h-14 text-xs font-mono uppercase tracking-widest gap-1 transition-colors ${
+            active ? "bg-black text-white" : "text-black hover:bg-[#F5F5F5]"
+          }`}
+        >
+          <Icon size={18} strokeWidth={1.5} />
+          {label}
+        </Link>
+      ))}
     </nav>
   );
 }

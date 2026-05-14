@@ -29,11 +29,11 @@ export const getAnalyticsByEvent = query({
   args: { eventId: v.id("events") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new ConvexError("Unauthorized");
+    if (!identity) return null;
 
     const event = await ctx.db.get(args.eventId);
-    if (!event) throw new ConvexError("Event not found");
-    if (event.hostId !== identity.subject) throw new ConvexError("Unauthorized");
+    if (!event) return null;
+    if (event.hostId !== identity.subject) return null;
 
     const allEvents = await ctx.db
       .query("analyticsEvents")

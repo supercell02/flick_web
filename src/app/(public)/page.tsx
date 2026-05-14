@@ -77,8 +77,11 @@ export default function LandingPage() {
       <section className="border-b border-black">
         <div className="max-w-6xl mx-auto px-4 md:px-8 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
           <motion.div {...fadeUp}>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[#888888] mb-4">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-[#888888] mb-3">
               Event Photo Collection
+            </p>
+            <p className="font-serif text-2xl md:text-3xl font-bold italic text-black mb-4">
+              Flick it!!
             </p>
             <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight mb-6">
               Every guest.
@@ -91,16 +94,16 @@ export default function LandingPage() {
               Create a gallery in under 60 seconds. Share a QR code. Guests upload
               photos directly from their phone — no app install, no signup required.
             </p>
-            <div className="flex flex-col sm:flex-row gap-0">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 href="/sign-up"
-                className="bg-black text-white px-6 py-4 font-mono text-xs uppercase tracking-widest hover:bg-neutral-800 transition-colors text-center min-h-11 flex items-center justify-center"
+                className="bg-black text-white px-6 py-4 font-mono text-xs uppercase tracking-widest hover:bg-neutral-800 transition-colors text-center min-h-11 flex items-center justify-center rounded-xl"
               >
                 Create Your Gallery
               </Link>
               <Link
                 href="/sign-in"
-                className="border border-black border-l-0 sm:border-l px-6 py-4 font-mono text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-colors text-center min-h-11 flex items-center justify-center sm:border-l-0"
+                className="border border-black px-6 py-4 font-mono text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-colors text-center min-h-11 flex items-center justify-center rounded-xl"
               >
                 Sign In
               </Link>
@@ -115,25 +118,23 @@ export default function LandingPage() {
             transition={{ duration: 0.5, ease: "easeOut" as const, delay: 0.1 }}
             className="hidden md:flex justify-center"
           >
-            <div className="border-2 border-black w-56 bg-white relative">
+            <div className="border-2 border-black w-56 bg-white relative rounded-3xl overflow-hidden">
               {/* Phone top bar */}
               <div className="border-b border-black px-4 py-2 flex items-center justify-between">
                 <span className="font-mono text-[9px] uppercase tracking-widest">Flick</span>
                 <QrCode size={12} strokeWidth={1.5} />
               </div>
               {/* Simulated gallery */}
-              <div className="grid grid-cols-2 gap-0">
+              <div className="grid grid-cols-2 gap-1 p-1">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
-                    className={`aspect-square bg-[#E5E5E5] border-b border-r border-black ${
-                      i % 2 === 0 ? "" : "border-r-0"
-                    }`}
+                    className="aspect-square bg-[#E5E5E5] rounded-lg"
                   />
                 ))}
               </div>
               <div className="border-t border-black px-3 py-2">
-                <div className="bg-black text-white text-center py-2 font-mono text-[9px] uppercase tracking-widest flex items-center justify-center gap-1">
+                <div className="bg-black text-white text-center py-2 font-mono text-[9px] uppercase tracking-widest flex items-center justify-center gap-1 rounded-lg">
                   <Upload size={8} strokeWidth={1.5} />
                   Tap to Upload
                 </div>
@@ -152,7 +153,7 @@ export default function LandingPage() {
           >
             How It Works
           </motion.p>
-          <div className="grid md:grid-cols-3 gap-0">
+          <div className="grid md:grid-cols-3 gap-4">
             {STEPS.map((step, i) => (
               <motion.div
                 key={step.number}
@@ -160,7 +161,7 @@ export default function LandingPage() {
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, ease: "easeOut" as const, delay: i * 0.08 }}
-                className={`border border-black p-6 ${i > 0 ? "border-l-0" : ""}`}
+                className="border border-black p-6 rounded-xl"
               >
                 <p className="font-mono text-3xl font-medium text-[#E5E5E5] mb-4">{step.number}</p>
                 <h3 className="font-serif text-xl font-semibold mb-2">{step.title}</h3>
@@ -212,7 +213,7 @@ export default function LandingPage() {
           >
             Features
           </motion.p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {FEATURES.map((feat, i) => {
               const Icon = feat.icon;
               return (
@@ -222,11 +223,9 @@ export default function LandingPage() {
                   whileInView={{ y: 0, opacity: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, ease: "easeOut" as const, delay: i * 0.06 }}
-                  className={`border border-black p-6 flex gap-4 ${
-                    i >= 2 ? "border-t-0" : ""
-                  } ${i % 2 === 1 ? "border-l-0" : ""}`}
+                  className="border border-black p-6 flex gap-4 rounded-xl"
                 >
-                  <div className="flex-shrink-0 w-10 h-10 border border-black flex items-center justify-center">
+                  <div className="flex-shrink-0 w-10 h-10 border border-black flex items-center justify-center rounded-lg">
                     <Icon size={18} strokeWidth={1.5} />
                   </div>
                   <div>
@@ -256,7 +255,7 @@ export default function LandingPage() {
           </h2>
           <Link
             href="/sign-up"
-            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 font-mono text-xs uppercase tracking-widest hover:bg-[#E5E5E5] transition-colors min-h-11"
+            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 font-mono text-xs uppercase tracking-widest hover:bg-[#E5E5E5] transition-colors min-h-11 rounded-xl"
           >
             <ImageIcon size={14} strokeWidth={1.5} />
             Create Your Gallery

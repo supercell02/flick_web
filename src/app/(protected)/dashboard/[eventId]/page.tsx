@@ -6,7 +6,7 @@ import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { QRCodeCard } from "@/components/event/QRCodeCard";
 import { formatDate, isRevealed } from "@/lib/utils";
-import { Eye, EyeOff, Trash2, ArrowLeft, Plus } from "lucide-react";
+import { Eye, EyeOff, Trash2, ArrowLeft, Plus, FolderPlus, X, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -21,9 +21,17 @@ export default function EventManagePage() {
   const event = useQuery(api.events.getEventByIdForHost, { eventId });
   const uploads = useQuery(api.uploads.getAllUploadsByEvent, { eventId });
   const analytics = useQuery(api.analytics.getAnalyticsByEvent, { eventId });
+  const subfolders = useQuery(api.subfolders.getSubfoldersByEvent, { eventId });
   const toggleVisibility = useMutation(api.uploads.toggleUploadVisibility);
+  const deleteUpload = useMutation(api.uploads.deleteUpload);
   const deleteEvent = useMutation(api.events.deleteEvent);
+  const createSubfolder = useMutation(api.subfolders.createSubfolder);
+  const deleteSubfolder = useMutation(api.subfolders.deleteSubfolder);
+
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmUploadDeleteId, setConfirmUploadDeleteId] = useState<Id<"uploads"> | null>(null);
+  const [newAlbumName, setNewAlbumName] = useState("");
+  const [creatingAlbum, setCreatingAlbum] = useState(false);
 
   useEffect(() => {
     if (searchParams?.get("created") === "1") {
@@ -64,6 +72,46 @@ export default function EventManagePage() {
     }
   }
 
+  async function handleDeleteUpload(uploadId: Id<"uploads">) {
+    if (confirmUploadDeleteId !== uploadId) {
+      setConfirmUploadDeleteId(uploadId);
+      setTimeout(() => setConfirmUploadDeleteId(null), 3000);
+      return;
+    }
+    setConfirmUploadDeleteId(null);
+    try {
+      await deleteUpload({ uploadId });
+      toast.success("Upload deleted");
+    } catch {
+      toast.error("Failed to delete upload");
+    }
+  }
+
+  async function handleCreateAlbum(e: React.FormEvent) {
+    e.preventDefault();
+    const name = newAlbumName.trim();
+    if (!name) return;
+    setCreatingAlbum(true);
+    try {
+      await createSubfolder({ eventId, name });
+      setNewAlbumName("");
+      toast.success(`Album "${name}" created`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create album");
+    } finally {
+      setCreatingAlbum(false);
+    }
+  }
+
+  async function handleDeleteAlbum(subfolderId: Id<"subfolders">, name: string) {
+    try {
+      await deleteSubfolder({ subfolderId });
+      toast.success(`Album "${name}" deleted — photos moved to general`);
+    } catch {
+      toast.error("Failed to delete album");
+    }
+  }
+
   const revealed = isRevealed(event.revealAt);
 
   return (
@@ -92,18 +140,15 @@ export default function EventManagePage() {
           initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-0 mb-8"
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8"
         >
           {[
             { label: "Uploads", value: analytics.upload_completed },
             { label: "QR Scans", value: analytics.qr_opened },
             { label: "Gallery Views", value: analytics.gallery_opened },
             { label: "Revisits", value: analytics.revisit },
-          ].map((stat, i) => (
-            <div
-              key={stat.label}
-              className={`border border-black p-4 ${i > 0 ? "border-l-0" : ""}`}
-            >
+          ].map((stat) => (
+            <div key={stat.label} className="border border-black p-4 rounded-xl">
               <p className="font-mono text-[10px] uppercase tracking-widest text-[#888888] mb-1">
                 {stat.label}
               </p>
@@ -119,7 +164,7 @@ export default function EventManagePage() {
       </div>
 
       {/* Guest view link */}
-      <div className="border border-black mb-8 flex items-center justify-between px-4 py-3">
+      <div className="border border-black mb-8 flex items-center justify-between px-4 py-3 rounded-xl">
         <p className="font-mono text-xs text-[#888888]">Guest view</p>
         <Link
           href={`/e/${event.slug}`}
@@ -131,9 +176,80 @@ export default function EventManagePage() {
         </Link>
       </div>
 
+      {/* Albums */}
+      <div className="border border-black mb-8 rounded-xl overflow-hidden">
+        <div className="border-b border-black px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-[#888888]">
+              Albums
+            </p>
+            <span className="font-mono text-[10px] text-[#888888]">
+              ({subfolders?.length ?? 0}/20) · optional
+            </span>
+          </div>
+        </div>
+
+        {/* Existing albums */}
+        {subfolders && subfolders.length > 0 && (
+          <div className="divide-y divide-[#E5E5E5]">
+            {subfolders.map((sf) => {
+              const count = (uploads ?? []).filter((u) => u.subfolderId === sf._id).length;
+              return (
+                <div key={sf._id} className="flex items-center justify-between px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <FolderPlus size={14} strokeWidth={1.5} className="text-[#888888]" />
+                    <div>
+                      <p className="font-mono text-xs">{sf.name}</p>
+                      <p className="font-mono text-[10px] text-[#888888]">
+                        {count} {count === 1 ? "photo" : "photos"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteAlbum(sf._id, sf.name)}
+                    className="p-2 hover:bg-[#F5F5F5] min-h-9 min-w-9 flex items-center justify-center rounded-lg text-[#888888] hover:text-black transition-colors"
+                    title="Delete album"
+                  >
+                    <X size={14} strokeWidth={1.5} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Create new album */}
+        {(subfolders?.length ?? 0) < 20 && (
+          <form onSubmit={handleCreateAlbum} className="flex border-t border-[#E5E5E5]">
+            <input
+              type="text"
+              value={newAlbumName}
+              onChange={(e) => setNewAlbumName(e.target.value.slice(0, 50))}
+              placeholder="New album name…"
+              className="flex-1 px-4 py-3 font-mono text-sm focus:outline-none border-0 bg-white h-12"
+            />
+            <button
+              type="submit"
+              disabled={!newAlbumName.trim() || creatingAlbum}
+              className="bg-black text-white px-4 py-3 font-mono text-xs uppercase tracking-widest hover:bg-neutral-800 transition-colors disabled:opacity-50 min-h-11 border-l border-black"
+            >
+              {creatingAlbum ? "…" : "Add"}
+            </button>
+          </form>
+        )}
+
+        {subfolders?.length === 0 && (
+          <div className="px-4 py-3 border-t border-[#E5E5E5]">
+            <p className="font-mono text-[10px] text-[#888888]">
+              No albums yet. Create one above — guests will be able to choose which album their photos go into.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Uploads table */}
       <div className="mb-8">
-        <div className="border border-black">
+        <div className="border border-black rounded-xl overflow-hidden">
           <div className="border-b border-black px-4 py-3 flex items-center justify-between">
             <p className="font-mono text-[10px] uppercase tracking-widest text-[#888888]">
               All Uploads ({uploads.length})
@@ -145,52 +261,80 @@ export default function EventManagePage() {
             </div>
           ) : (
             <div className="divide-y divide-[#E5E5E5]">
-              {uploads.map((upload) => (
-                <div key={upload._id} className={`flex items-center gap-3 px-4 py-3 ${!upload.isVisible ? "opacity-50" : ""}`}>
-                  {upload.fileType === "image" ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={upload.fileUrl}
-                      alt=""
-                      className="w-12 h-12 object-cover border border-[#E5E5E5] grayscale flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-[#E5E5E5] border border-[#E5E5E5] flex items-center justify-center flex-shrink-0">
-                      <span className="font-mono text-[9px] uppercase text-[#888888]">Video</span>
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-mono text-xs truncate">{upload.uploadedBy}</p>
-                    <p className="font-mono text-[10px] text-[#888888]">
-                      {upload.fileType} · {(upload.size / 1024 / 1024).toFixed(1)} MB
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => toggleVisibility({ uploadId: upload._id })}
-                    className="p-2 hover:bg-[#F5F5F5] min-h-11 min-w-11 flex items-center justify-center"
-                    title={upload.isVisible ? "Hide" : "Show"}
+              {uploads.map((upload) => {
+                const albumName = upload.subfolderId
+                  ? (subfolders ?? []).find((sf) => sf._id === upload.subfolderId)?.name
+                  : null;
+                return (
+                  <div
+                    key={upload._id}
+                    className={`flex items-center gap-3 px-4 py-3 ${!upload.isVisible ? "opacity-50" : ""}`}
                   >
-                    {upload.isVisible ? (
-                      <Eye size={14} strokeWidth={1.5} />
+                    {upload.fileType === "image" ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={upload.fileUrl}
+                        alt=""
+                        className="w-12 h-12 object-cover border border-[#E5E5E5] rounded-md flex-shrink-0"
+                      />
                     ) : (
-                      <EyeOff size={14} strokeWidth={1.5} />
+                      <div className="w-12 h-12 bg-[#E5E5E5] border border-[#E5E5E5] flex items-center justify-center flex-shrink-0 rounded-md">
+                        <span className="font-mono text-[9px] uppercase text-[#888888]">Video</span>
+                      </div>
                     )}
-                  </button>
-                </div>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-xs truncate">{upload.uploadedBy}</p>
+                      <p className="font-mono text-[10px] text-[#888888]">
+                        {upload.fileType} · {(upload.size / 1024 / 1024).toFixed(1)} MB
+                        {albumName && (
+                          <span className="ml-1 text-black">· {albumName}</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => toggleVisibility({ uploadId: upload._id })}
+                        className="p-2 hover:bg-[#F5F5F5] min-h-11 min-w-11 flex items-center justify-center rounded-lg"
+                        title={upload.isVisible ? "Hide" : "Show"}
+                      >
+                        {upload.isVisible ? (
+                          <Eye size={14} strokeWidth={1.5} />
+                        ) : (
+                          <EyeOff size={14} strokeWidth={1.5} />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUpload(upload._id)}
+                        className={`p-2 min-h-11 min-w-11 flex items-center justify-center rounded-lg transition-colors ${
+                          confirmUploadDeleteId === upload._id
+                            ? "bg-red-50 text-red-600 hover:bg-red-100"
+                            : "hover:bg-[#F5F5F5] text-[#888888] hover:text-black"
+                        }`}
+                        title={confirmUploadDeleteId === upload._id ? "Click again to confirm" : "Delete"}
+                      >
+                        {confirmUploadDeleteId === upload._id ? (
+                          <AlertTriangle size={14} strokeWidth={1.5} />
+                        ) : (
+                          <Trash2 size={14} strokeWidth={1.5} />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
       </div>
 
       {/* Delete event */}
-      <div className="border border-black p-4">
+      <div className="border border-black p-4 rounded-xl">
         <p className="font-mono text-[10px] uppercase tracking-widest text-[#888888] mb-3">
           Danger Zone
         </p>
         <button
           onClick={handleDelete}
-          className={`flex items-center gap-2 px-4 py-3 font-mono text-xs uppercase tracking-widest min-h-11 border border-black transition-colors ${
+          className={`flex items-center gap-2 px-4 py-3 font-mono text-xs uppercase tracking-widest min-h-11 border border-black transition-colors rounded-lg ${
             confirmDelete
               ? "bg-black text-white"
               : "hover:bg-black hover:text-white"
