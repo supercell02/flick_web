@@ -4,13 +4,19 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { UserButton, useAuth } from "@clerk/nextjs";
+import { motion } from "framer-motion";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const { isSignedIn } = useAuth();
 
   return (
-    <header className="border-b border-black bg-white sticky top-0 z-50">
+    <motion.header
+      className="border-b border-black bg-white sticky top-0 z-50"
+      initial={{ y: -10, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
       <div className="max-w-6xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between">
         <Link href="/" className="flex flex-col leading-none">
           <span className="font-serif text-xl font-bold tracking-tight uppercase">Flick</span>
@@ -23,13 +29,13 @@ export function Navbar() {
             <>
               <Link
                 href="/sign-in"
-                className="border border-black px-4 py-2 text-xs font-mono uppercase tracking-widest hover:bg-black hover:text-white transition-colors rounded-lg"
+                className="border border-black px-4 py-2 text-xs font-mono uppercase tracking-widest hover:bg-black hover:text-flick-yellow transition-colors rounded-lg"
               >
                 Sign In
               </Link>
               <Link
                 href="/sign-up"
-                className="bg-black text-white px-4 py-2 text-xs font-mono uppercase tracking-widest hover:bg-neutral-800 transition-colors rounded-lg"
+                className="bg-flick-yellow text-black px-4 py-2 text-xs font-mono uppercase tracking-widest hover:bg-flick-yellow/80 transition-colors rounded-lg"
               >
                 Create Gallery
               </Link>
@@ -38,7 +44,7 @@ export function Navbar() {
             <>
               <Link
                 href="/dashboard"
-                className="border border-black px-4 py-2 text-xs font-mono uppercase tracking-widest hover:bg-black hover:text-white transition-colors rounded-lg"
+                className="border border-black px-4 py-2 text-xs font-mono uppercase tracking-widest hover:bg-black hover:text-flick-yellow transition-colors rounded-lg"
               >
                 Dashboard
               </Link>
@@ -75,7 +81,7 @@ export function Navbar() {
                 <Link
                   href="/sign-up"
                   onClick={() => setOpen(false)}
-                  className="bg-black text-white px-4 py-3 text-xs font-mono uppercase tracking-widest text-center rounded-lg"
+                  className="bg-flick-yellow text-black px-4 py-3 text-xs font-mono uppercase tracking-widest text-center rounded-lg"
                 >
                   Create Gallery
                 </Link>
@@ -85,7 +91,7 @@ export function Navbar() {
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="border border-black py-3 px-4 text-xs font-mono uppercase tracking-widest rounded-lg"
+                  className="border border-black py-3 px-4 text-xs font-mono uppercase tracking-widest rounded-lg hover:text-flick-yellow"
                 >
                   Dashboard
                 </Link>
@@ -97,6 +103,6 @@ export function Navbar() {
           </nav>
         </div>
       )}
-    </header>
+    </motion.header>
   );
 }

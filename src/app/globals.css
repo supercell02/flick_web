@@ -4,6 +4,8 @@
   --color-background: #ffffff;
   --color-foreground: #000000;
 
+  --color-flick-yellow: #F5C842;
+
   --font-sans: var(--font-mono);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-playfair);

@@ -5,6 +5,10 @@ import { motion } from "framer-motion";
 import type { Transition } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Pricing } from "@/components/landing/Pricing";
+import { WaitlistBanner } from "@/components/landing/WaitlistBanner";
+import { FilmGrain } from "@/components/FilmGrain";
 import { QrCode, Upload, ImageIcon, Zap, Lock, Share2 } from "lucide-react";
 
 const transition: Transition = { duration: 0.4, ease: "easeOut" };
@@ -12,7 +16,7 @@ const transition: Transition = { duration: 0.4, ease: "easeOut" };
 const fadeUp = {
   initial: { y: 24, opacity: 0 },
   whileInView: { y: 0, opacity: 1 },
-  viewport: { once: true as const },
+  viewport: { once: true as const, amount: 0.15 },
   transition,
 };
 
@@ -74,30 +78,53 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="border-b border-black">
-        <div className="max-w-6xl mx-auto px-4 md:px-8 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
-          <motion.div {...fadeUp}>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[#888888] mb-3">
-              Event Photo Collection
-            </p>
-            <p className="font-serif text-2xl md:text-3xl font-bold italic text-black mb-4">
-              Flick it!!
-            </p>
-            <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight mb-6">
-              Every guest.
-              <br />
-              Every photo.
-              <br />
-              One place.
-            </h1>
-            <p className="font-mono text-sm text-[#888888] leading-relaxed mb-8 max-w-md">
+      <section className="border-b border-black relative overflow-hidden">
+        <FilmGrain />
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            {/* Headline block */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <p className="font-mono text-[10px] uppercase tracking-widest text-[#888888] mb-3">
+                Event Photo Collection
+              </p>
+              <p className="font-serif text-2xl md:text-3xl font-bold italic text-black mb-4">
+                Flick it!!
+              </p>
+              <h1 className="font-serif text-4xl md:text-6xl font-bold leading-tight mb-6">
+                Every guest.
+                <br />
+                Every photo.
+                <br />
+                One place.
+              </h1>
+            </motion.div>
+            {/* Subtext */}
+            <motion.p
+              className="font-mono text-sm text-[#888888] leading-relaxed mb-8 max-w-md"
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+            >
               Create a gallery in under 60 seconds. Share a QR code. Guests upload
               photos directly from their phone — no app install, no signup required.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
+            </motion.p>
+            {/* CTA buttons */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-3"
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+            >
               <Link
                 href="/sign-up"
-                className="bg-black text-white px-6 py-4 font-mono text-xs uppercase tracking-widest hover:bg-neutral-800 transition-colors text-center min-h-11 flex items-center justify-center rounded-xl"
+                className="bg-flick-yellow text-black px-6 py-4 font-mono text-xs uppercase tracking-widest hover:bg-flick-yellow/80 transition-colors text-center min-h-11 flex items-center justify-center rounded-xl"
               >
                 Create Your Gallery
               </Link>
@@ -107,15 +134,15 @@ export default function LandingPage() {
               >
                 Sign In
               </Link>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
 
           {/* Phone mockup */}
           <motion.div
             initial={{ y: 24, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, ease: "easeOut" as const, delay: 0.1 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.5, ease: "easeOut" as const, delay: 0.15 }}
             className="hidden md:flex justify-center"
           >
             <div className="border-2 border-black w-56 bg-white relative rounded-3xl overflow-hidden">
@@ -153,17 +180,17 @@ export default function LandingPage() {
           >
             How It Works
           </motion.p>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {STEPS.map((step, i) => (
               <motion.div
                 key={step.number}
                 initial={{ y: 24, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.15 }}
                 transition={{ duration: 0.4, ease: "easeOut" as const, delay: i * 0.08 }}
-                className="border border-black p-6 rounded-xl"
+                className="border border-black p-5 md:p-6 rounded-xl"
               >
-                <p className="font-mono text-3xl font-medium text-[#E5E5E5] mb-4">{step.number}</p>
+                <p className="font-mono text-3xl font-medium text-flick-yellow/40 mb-4">{step.number}</p>
                 <h3 className="font-serif text-xl font-semibold mb-2">{step.title}</h3>
                 <p className="font-mono text-xs text-[#888888] leading-relaxed">{step.desc}</p>
               </motion.div>
@@ -221,9 +248,9 @@ export default function LandingPage() {
                   key={feat.title}
                   initial={{ y: 24, opacity: 0 }}
                   whileInView={{ y: 0, opacity: 1 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0.15 }}
                   transition={{ duration: 0.4, ease: "easeOut" as const, delay: i * 0.06 }}
-                  className="border border-black p-6 flex gap-4 rounded-xl"
+                  className="border border-black p-5 md:p-6 flex gap-4 rounded-xl"
                 >
                   <div className="flex-shrink-0 w-10 h-10 border border-black flex items-center justify-center rounded-lg">
                     <Icon size={18} strokeWidth={1.5} />
@@ -238,6 +265,10 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <HowItWorks />
+      <Pricing />
+      <WaitlistBanner />
 
       {/* Footer CTA */}
       <section className="bg-black text-white border-b border-black">
@@ -255,7 +286,7 @@ export default function LandingPage() {
           </h2>
           <Link
             href="/sign-up"
-            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 font-mono text-xs uppercase tracking-widest hover:bg-[#E5E5E5] transition-colors min-h-11 rounded-xl"
+            className="inline-flex items-center gap-2 bg-flick-yellow text-black px-8 py-4 font-mono text-xs uppercase tracking-widest hover:bg-flick-yellow/80 transition-colors min-h-11 rounded-xl"
           >
             <ImageIcon size={14} strokeWidth={1.5} />
             Create Your Gallery
