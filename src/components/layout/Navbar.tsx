@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { UserButton, useAuth } from "@clerk/nextjs";
 import { motion } from "framer-motion";
+import { CreditBalance } from "@/components/credits/CreditBalance";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -48,6 +49,7 @@ export function Navbar() {
               >
                 Dashboard
               </Link>
+              <CreditBalance />
               <div className="ml-2">
                 <UserButton />
               </div>
@@ -55,14 +57,17 @@ export function Navbar() {
           )}
         </nav>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden p-2 min-h-11 min-w-11 flex items-center justify-center rounded-lg"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
-        </button>
+        {/* Mobile: credit pill + hamburger */}
+        <div className="md:hidden flex items-center gap-2">
+          {isSignedIn && <CreditBalance />}
+          <button
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center rounded-lg"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -95,6 +100,10 @@ export function Navbar() {
                 >
                   Dashboard
                 </Link>
+                <div className="flex items-center justify-between border border-[#E5E5E5] rounded-lg px-4 py-3">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#888888]">Credits</span>
+                  <CreditBalance />
+                </div>
                 <div className="py-3">
                   <UserButton />
                 </div>

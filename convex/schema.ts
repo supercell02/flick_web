@@ -57,4 +57,31 @@ export default defineSchema({
   })
     .index("by_event", ["eventId"])
     .index("by_type", ["eventType"]),
+
+  userCredits: defineTable({
+    userId: v.string(),
+    balance: v.number(),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
+  creditTransactions: defineTable({
+    userId: v.string(),
+    type: v.string(),
+    amount: v.number(),
+    description: v.string(),
+    razorpayOrderId: v.optional(v.string()),
+    razorpayPaymentId: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
+  razorpayOrders: defineTable({
+    userId: v.string(),
+    orderId: v.string(),
+    amount: v.number(),
+    credits: v.number(),
+    status: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_orderId", ["orderId"])
+    .index("by_userId", ["userId"]),
 });

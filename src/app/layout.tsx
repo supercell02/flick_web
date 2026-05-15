@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { CreditInitializer } from "@/components/credits/CreditInitializer";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -44,6 +45,7 @@ export default function RootLayout({
         <body className="min-h-full bg-white text-black antialiased">
           <ConvexClientProvider>
             <PostHogProvider>
+              <CreditInitializer />
               {children}
               <Toaster />
             </PostHogProvider>
